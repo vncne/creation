@@ -68,8 +68,9 @@ class World:
         Args:
             time_of_day (float): Current hour of the day.
         """
-        # Simplified daylight calculation
-        light_level = max(0, math.sin((time_of_day / 24) * math.pi * 2))
+        # Simplified daylight calculation - properly offset for noon at 12
+        # Use cosine to make peak at noon (12h), with proper phase shift
+        light_level = max(0, math.cos((time_of_day - 12) / 12 * math.pi))
         
         # Update lighting for all cells
         for y in range(self.height):
@@ -90,6 +91,25 @@ class World:
         if 0 <= x < self.width and 0 <= y < self.height:
             return self.grid[y][x]
         return None
+    
+    def update_cell_water(self, x, y, water_change):
+        """
+        Safely update water level in a cell.
+        
+        Args:
+            x (int): X coordinate.
+            y (int): Y coordinate.
+            water_change (float): Amount to change water by (can be negative).
+            
+        Returns:
+            bool: True if update was successful, False otherwise.
+        """
+        if 0 <= x < self.width and 0 <= y < self.height:
+            cell = self.grid[y][x]
+            new_water = max(0, min(1.0, cell['water'] + water_change))
+            self.grid[y][x]['water'] = new_water
+            return True
+        return False
     
     def advance_time(self):
         """
