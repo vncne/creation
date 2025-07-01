@@ -48,7 +48,7 @@ class AsciiVisualizer:
         # Add stats
         stats = self.simulation.get_stats()
         stats_str = (
-            f"Day: {stats['day']} | Hour: {stats['hour']} | Plants: {stats['plant_count']}\n"
+            f"Day: {stats['day']} | Hour: {stats['hour']} | Plants: {stats['plant_count']}/{stats['max_plants']}\n"
             f"CO2: {stats['co2_level']:.1f} | O2: {stats['o2_level']:.1f} | Atm. Water: {stats['water_in_atmosphere']:.1f}"
         )
         

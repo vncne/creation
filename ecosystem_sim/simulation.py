@@ -13,17 +13,22 @@ class Simulation:
     Attributes:
         world (World): The world grid for the simulation.
         plants (list): List of all plants in the simulation.
+        max_plant_population (int): Maximum number of plants allowed.
     """
-    def __init__(self, width=50, height=50):
+    def __init__(self, width=50, height=50, max_plants=None):
         """
         Initialize a new simulation with the given world dimensions.
         
         Args:
             width (int): Width of the world grid.
             height (int): Height of the world grid.
+            max_plants (int): Maximum plant population (defaults to 10% of grid size).
         """
         self.world = World(width, height)
         self.plants = []
+        
+        # Set reasonable population limit based on world size
+        self.max_plant_population = max_plants or max(100, (width * height) // 10)
         
         # Environmental variables
         self.atmosphere = {
@@ -73,9 +78,14 @@ class Simulation:
                 plants_to_remove.append(plant)
                 continue
                 
-            # Try to reproduce
-            offspring = plant.reproduce()
-            new_plants.extend(offspring)
+            # Try to reproduce only if under population limit
+            if len(self.plants) + len(new_plants) < self.max_plant_population:
+                offspring = plant.reproduce()
+                new_plants.extend(offspring)
+                
+                # Additional safeguard: limit offspring per plant
+                if len(new_plants) > 50:  # Prevent too many new plants in one update
+                    break
         
         # Remove dead plants
         for plant in plants_to_remove:
@@ -87,8 +97,9 @@ class Simulation:
             if cell:
                 cell['resources'] += plant.size * 0.5
         
-        # Add new plants
-        self.plants.extend(new_plants)
+        # Add new plants (respect population limit)
+        plants_to_add = new_plants[:self.max_plant_population - len(self.plants)]
+        self.plants.extend(plants_to_add)
         
         # Update atmospheric conditions
         self._update_atmosphere()
@@ -147,6 +158,7 @@ class Simulation:
             'day': self.world.day,
             'hour': self.world.hour,
             'plant_count': len(self.plants),
+            'max_plants': self.max_plant_population,
             'co2_level': self.atmosphere['co2'],
             'o2_level': self.atmosphere['o2'],
             'water_in_atmosphere': self.atmosphere.get('water', 0),

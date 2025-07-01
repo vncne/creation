@@ -62,9 +62,9 @@ class Plant:
             self.co2_absorbed += growth_factor
             self.o2_produced += growth_factor
             
-            # Consume some water from the soil
-            new_water = max(0, cell['water'] - growth_factor * 0.05)
-            self.world.grid[y][x]['water'] = new_water
+            # Consume some water from the soil using safe method
+            water_consumption = -growth_factor * 0.05
+            self.world.update_cell_water(x, y, water_consumption)
         else:
             # Plant suffers in poor conditions
             self.health -= 2
